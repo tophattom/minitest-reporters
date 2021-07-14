@@ -16,7 +16,7 @@ module Minitest
 
       attr_reader :reports_path
 
-      def initialize(reports_dir = DEFAULT_REPORTS_DIR, empty = true, options = {})
+      def initialize(reports_dir: DEFAULT_REPORTS_DIR, empty: true, options: {})
         super({})
         @reports_path = File.absolute_path(ENV.fetch("MINITEST_REPORTERS_REPORTS_DIR", reports_dir))
         @single_file = options[:single_file]
