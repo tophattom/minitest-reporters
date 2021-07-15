@@ -13,6 +13,7 @@ module Minitest
     # Also inspired by minitest-ci (see https://github.com/bhenderson/minitest-ci)
     class JUnitReporter < BaseReporter
       DEFAULT_REPORTS_DIR = "test/reports"
+      FILE_PATH_OVERRIDE_METHOD = :junit_reporter_file_path_override
 
       attr_reader :reports_path
 
@@ -73,11 +74,20 @@ module Minitest
       private
 
       def get_source_location(result)
-        if result.respond_to? :source_location
-          result.source_location
-        else
-          result.method(result.name).source_location
+        location =
+          if result.respond_to? :source_location
+            result.source_location
+          else
+            result.method(result.name).source_location
+          end
+
+        begin
+          klass = Object.const_get(test_class(result).name)
+          location[0] = klass.send(FILE_PATH_OVERRIDE_METHOD) if klass.respond_to?(FILE_PATH_OVERRIDE_METHOD)
+        rescue
         end
+
+        location
       end
 
       def parse_xml_for(xml, suite, tests)
