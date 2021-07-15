@@ -21,6 +21,7 @@ module Minitest
         @reports_path = File.absolute_path(ENV.fetch("MINITEST_REPORTERS_REPORTS_DIR", reports_dir))
         @single_file = options[:single_file]
         @base_path = options[:base_path] || Dir.pwd
+        @test_name_lambda = options[:test_name_lambda]
 
         return unless empty
 
@@ -89,7 +90,9 @@ module Minitest
                       :assertions => suite_result[:assertion_count], :time => suite_result[:time]) do
           tests.each do |test|
             lineno = get_source_location(test).last
-            xml.testcase(:name => test.name, :file => file_path, :lineno => lineno, :classname => suite, :assertions => test.assertions,
+            name = @test_name_lambda.respond_to?(:call) ? @test_name_lambda.call(suite, test) : test.name
+
+            xml.testcase(:name => name, :file => file_path, :lineno => lineno, :classname => suite, :assertions => test.assertions,
                          :time => test.time) do
               xml << xml_message_for(test) unless test.passed?
             end
